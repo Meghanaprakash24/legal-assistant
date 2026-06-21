@@ -272,7 +272,6 @@ The project supports evaluation using **RAGAS**, enabling assessment of:
 * Case law integration
 * Multilingual legal assistance
 * Document upload and analysis
-* Advanced analytics
 * Deployment with Docker and Kubernetes
 
 ## License
