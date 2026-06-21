@@ -26,11 +26,11 @@ load_dotenv(BASE_DIR / ".env")
 # Directories
 # ---------------------------------------------------------------------------
 
-RAW_DIR: Final[Path] = Path("data/raw")
-PROCESSED_DIR: Final[Path] = Path("data/processed")
-CHUNKED_DIR: Final[Path] = Path("data/chunked")
-EMBEDDINGS_DIR: Final[Path] = Path("data/embeddings")
-LOG_DIR: Final[Path] = Path("logs")
+RAW_DIR: Final[Path] = BASE_DIR / "data" / "raw"
+PROCESSED_DIR: Final[Path] = BASE_DIR / "data" / "processed"
+CHUNKED_DIR: Final[Path] = BASE_DIR / "data" / "chunked"
+EMBEDDINGS_DIR: Final[Path] = BASE_DIR / "data" / "embeddings"
+LOG_DIR: Final[Path] = BASE_DIR / "logs"
 
 
 # ---------------------------------------------------------------------------
@@ -188,6 +188,19 @@ CONFIDENCE_THRESHOLD: Final[float] = float(
 # Separator inserted between chunks when assembling the LLM context string.
 CONTEXT_SEPARATOR: Final[str] = "\n\n---\n\n"
 
+# ---------------------------------------------------------------------------
+# Indexer configuration (src/indexer.py)
+# ---------------------------------------------------------------------------
+
+#: Number of points uploaded per upsert call to Qdrant.
+INDEXING_BATCH_SIZE: Final[int] = int(os.environ.get("INDEXING_BATCH_SIZE", "100"))
+
+#: Maximum retries for a failed batch upsert.
+MAX_UPSERT_RETRIES: Final[int] = int(os.environ.get("MAX_UPSERT_RETRIES", "3"))
+
+#: Base backoff delay (seconds) between upsert retries. Multiplied by attempt number.
+RETRY_BACKOFF_SECONDS: Final[float] = float(os.environ.get("RETRY_BACKOFF_SECONDS", "1.0"))
+
  
 # ---------------------------------------------------------------------------
 # Orchestrator configuration (src/orchestrator.py)
@@ -241,14 +254,26 @@ TIMEOUT: Final[float] = float(
 # API layer configuration (app.py)
 # ---------------------------------------------------------------------------
  
-LOG_LEVEL: Final[str] = os.environ.get("LOG_LEVEL", "DEBUG")
- 
-CORS_ALLOWED_ORIGINS: Final[tuple[str, ...]] = (
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
+LOG_LEVEL: Final[str] = os.environ.get("LOG_LEVEL", "INFO")
+
+# CORS origins — configurable via the CORS_ORIGINS environment variable
+# (comma-separated list).  Falls back to common local-development origins
+# when the variable is not set.
+_DEFAULT_CORS_ORIGINS: Final[str] = (
+    "http://localhost:3000,"
+    "http://localhost:5173,"
+    "http://127.0.0.1:3000,"
+    "http://127.0.0.1:5173,"
+    "http://localhost:8501,"
+    "http://127.0.0.1:8501"
 )
- 
-API_HOST: Final[str] = os.environ.get("API_HOST", "127.0.0.1")
-API_PORT: Final[int] = int(os.environ.get("API_PORT", "8000"))
+
+CORS_ALLOWED_ORIGINS: Final[tuple[str, ...]] = tuple(
+    origin.strip()
+    for origin in os.environ.get("CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip()
+)
+
+# Render injects PORT; fall back to API_PORT for local dev.
+API_HOST: Final[str] = os.environ.get("API_HOST", "0.0.0.0")
+API_PORT: Final[int] = int(os.environ.get("PORT", os.environ.get("API_PORT", "8000")))

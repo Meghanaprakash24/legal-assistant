@@ -46,9 +46,10 @@ try:
         ACCENT_COLOR,
     )
 except ImportError:
+    import os as _os
     APP_NAME      = "LexAI – Indian Legal Research"
     APP_ICON      = "⚖️"
-    API_BASE_URL  = "http://127.0.0.1:8000"
+    API_BASE_URL  = _os.environ.get("API_URL", _os.environ.get("API_BASE_URL", "http://127.0.0.1:8000"))
     PRIMARY_COLOR = "#0F172A"
     ACCENT_COLOR  = "#2563EB"
 

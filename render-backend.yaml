@@ -1,0 +1,28 @@
+# render-backend.yaml
+# Render Blueprint specification for the FastAPI backend service.
+# Deploy via: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: legal-rag-backend
+    runtime: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: COLLECTION_NAME
+        value: legal_documents
+      - key: CORS_ORIGINS
+        sync: false  # Set to your frontend Render URL, e.g. https://legal-rag-frontend.onrender.com
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PYTHON_VERSION
+        value: "3.11.9"

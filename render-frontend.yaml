@@ -1,0 +1,23 @@
+# render-frontend.yaml
+# Render Blueprint specification for the Streamlit frontend service.
+# Deploy via: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: legal-rag-frontend
+    runtime: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: >-
+      streamlit run frontend/app.py
+      --server.address 0.0.0.0
+      --server.port $PORT
+      --server.headless true
+      --server.enableCORS false
+      --server.enableXsrfProtection false
+    envVars:
+      - key: API_URL
+        sync: false  # Set to your backend Render URL, e.g. https://legal-rag-backend.onrender.com
+      - key: PYTHON_VERSION
+        value: "3.11.9"

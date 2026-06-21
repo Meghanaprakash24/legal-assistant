@@ -78,7 +78,7 @@ def _configure_logging() -> None:
     logger.remove()
     logger.add(
         sys.stderr,
-        level=getattr(config, "LOG_LEVEL", "DEBUG"),
+        level=getattr(config, "LOG_LEVEL", "INFO"),
         format=(
             "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
             "<level>{level: <8}</level> | "
@@ -87,14 +87,17 @@ def _configure_logging() -> None:
         ),
         colorize=True,
     )
-    config.LOG_DIR.mkdir(exist_ok=True)
-    logger.add(
-        config.LOG_DIR / "app.log",
-        level="DEBUG",
-        rotation=config.LOG_ROTATION,
-        retention=config.LOG_RETENTION,
-        encoding="utf-8",
-    )
+    try:
+        config.LOG_DIR.mkdir(parents=True, exist_ok=True)
+        logger.add(
+            config.LOG_DIR / "app.log",
+            level="DEBUG",
+            rotation=config.LOG_ROTATION,
+            retention=config.LOG_RETENTION,
+            encoding="utf-8",
+        )
+    except OSError:
+        logger.warning("Could not create log directory '{}'; file logging disabled.", config.LOG_DIR)
 
 
 _configure_logging()
@@ -214,6 +217,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     logger.info("Application startup beginning…")
     startup_start = time.perf_counter()
+
+    # ── Environment validation (warn, never crash) ─────────────────
+    if not config.GROQ_API_KEY:
+        logger.warning("GROQ_API_KEY is not set — LLM-based agents will be unavailable.")
+    if not config.QDRANT_URL:
+        logger.warning("QDRANT_URL is not set — dense retrieval will be unavailable.")
+    if not config.QDRANT_API_KEY:
+        logger.warning("QDRANT_API_KEY is not set — Qdrant Cloud authentication may fail.")
 
     components = _Components()
 
@@ -877,7 +888,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="127.0.0.1",
-        port=8000,
+        host=config.API_HOST,
+        port=config.API_PORT,
         reload=False,
     )

@@ -7,13 +7,23 @@ env/
 # Python
 __pycache__/
 *.pyc
+*.pyo
 
 # Environment variables
 .env
 
 # Logs
 logs/
+*.log
+
+# Data (embeddings, processed chunks — large binary files)
+data/embeddings/
+data/processed/
 
 # IDE
 .vscode/
 .idea/
+
+# OS
+.DS_Store
+Thumbs.db
