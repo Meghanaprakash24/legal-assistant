@@ -1,26 +1,45 @@
-PyMuPDF
-loguru
-python-dotenv
-pydantic
-pdfplumber==0.11.9
-pypdf==5.9.0
-tqdm
-numpy==1.26.4
-qdrant-client>=1.9.0,<2.0.0
-rank-bm25>=0.2.2,<0.3.0
-torch
-transformers==4.52.4
-sentence-transformers==4.1.0
-huggingface-hub==0.33.0
-groq
+# =============================================================================
+# Backend runtime dependencies
+# =============================================================================
+
+# --- Core API ---
 fastapi
-starlette
 uvicorn
+starlette
 anyio
+pydantic
+python-dotenv
+loguru
+
+# --- Qdrant vector DB ---
+qdrant-client>=1.12.0,<2.0.0
+
+# --- BM25 sparse retrieval ---
+rank-bm25>=0.2.2,<0.3.0
+
+# --- ML / Embeddings / Reranker ---
+# CPU-only torch to save ~700MB vs full CUDA bundle.
+# On Render (Linux), pip resolves the CPU wheel automatically
+# when we exclude the CUDA index.
+torch --index-url https://download.pytorch.org/whl/cpu
+transformers>=4.40,<5.0
+sentence-transformers>=3.0,<5.0
+huggingface-hub>=0.20,<1.0
+numpy>=1.26,<2.0
+
+# --- LLM ---
+groq
+
+# --- Orchestrator ---
 langgraph
 
-# Frontend runtime dependencies. Replit deployments install the root
-# requirements.txt, so keep Streamlit packages here too.
+# --- Data processing (used by chunker/indexer, not at runtime) ---
+tqdm
+
+# =============================================================================
+# Frontend runtime dependencies (Streamlit)
+# Both services share this requirements.txt on Render.
+# =============================================================================
 streamlit>=1.38
 requests>=2.31
 pandas>=2.2

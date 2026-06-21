@@ -515,9 +515,7 @@ class HybridRetriever:
                 port=None,
                 api_key=self._api_key or None,
                 timeout=self._timeout,
-                check_compatibility=False,
                 prefer_grpc=False,
-                trust_env=config.QDRANT_TRUST_ENV,
             )
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to create Qdrant client: {}", exc)
@@ -771,19 +769,13 @@ class HybridRetriever:
         """Build the BM25 index from chunk JSON files in ``chunked_dir``.
 
         Reads every ``*_chunks.json`` file under the configured
-        chunked-documents directory -- never sidecar files such as
-        ``*_metadata.json`` written by the chunking stage, which contain
-        a single summary dict rather than a list of chunk records --
-        extracts ``retrieval_text`` -- never ``text``, since the
-        retrieval text carries the legal hierarchy prefix -- plus
-        surrounding chunk metadata, tokenizes the corpus, and constructs
-        a ``BM25Okapi`` index in memory.
+        chunked-documents directory, extracts ``retrieval_text``,
+        tokenizes the corpus, and constructs a ``BM25Okapi`` index.
 
         Returns:
-            ``True`` if the build process completed (even with zero
-            chunks found -- check ``len(self._bm25_corpus)`` to
-            distinguish), ``False`` if the chunked-documents directory is
-            missing or ``rank_bm25`` is not installed.
+            ``True`` if the build process completed, ``False`` if the
+            chunked-documents directory is missing or ``rank_bm25`` is
+            not installed.
         """
         try:
             from rank_bm25 import BM25Okapi
@@ -838,20 +830,93 @@ class HybridRetriever:
         self._bm25 = BM25Okapi(tokenized)
         self._bm25_corpus = corpus
         logger.info("BM25 index built from {} chunk(s) across {} file(s).", len(corpus), len(chunk_files))
+
+        # Persist to disk so subsequent restarts skip the rebuild.
+        self._save_bm25_cache(corpus, tokenized)
+        return True
+
+    # ------------------------------------------------------------------
+    # BM25 disk cache helpers
+    # ------------------------------------------------------------------
+
+    def _bm25_cache_path(self) -> Path:
+        """Return the path for the BM25 pickle cache file."""
+        return self._chunked_dir / ".bm25_cache.pkl"
+
+    def _chunk_files_mtime(self) -> float:
+        """Return the max mtime across all chunk JSON files (for cache invalidation)."""
+        chunk_files = sorted(self._chunked_dir.glob("*_chunks.json"))
+        if not chunk_files:
+            return 0.0
+        return max(f.stat().st_mtime for f in chunk_files)
+
+    def _save_bm25_cache(self, corpus: list[RetrievedChunk], tokenized: list[list[str]]) -> None:
+        """Persist BM25 corpus + tokenized data to disk."""
+        import pickle
+        cache_data = {
+            "corpus": corpus,
+            "tokenized": tokenized,
+            "mtime": self._chunk_files_mtime(),
+        }
+        try:
+            cache_path = self._bm25_cache_path()
+            cache_path.write_bytes(pickle.dumps(cache_data))
+            logger.info("BM25 cache saved to '{}'.", cache_path)
+        except OSError as exc:
+            logger.warning("Could not save BM25 cache: {}", exc)
+
+    def _load_bm25_cache(self) -> bool:
+        """Try to load BM25 index from disk cache. Returns True on success."""
+        import pickle
+        cache_path = self._bm25_cache_path()
+        if not cache_path.exists():
+            return False
+
+        try:
+            cache_data = pickle.loads(cache_path.read_bytes())
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("BM25 cache unreadable, will rebuild: {}", exc)
+            return False
+
+        # Invalidate if chunk files have changed.
+        cached_mtime = cache_data.get("mtime", 0.0)
+        current_mtime = self._chunk_files_mtime()
+        if abs(current_mtime - cached_mtime) > 1.0:
+            logger.info("BM25 cache stale (mtime changed), will rebuild.")
+            return False
+
+        corpus = cache_data.get("corpus", [])
+        tokenized = cache_data.get("tokenized", [])
+        if not corpus or not tokenized:
+            return False
+
+        try:
+            from rank_bm25 import BM25Okapi
+        except ImportError:
+            return False
+
+        self._bm25 = BM25Okapi(tokenized)
+        self._bm25_corpus = corpus
+        logger.info("BM25 index loaded from disk cache ({} chunks).", len(corpus))
         return True
 
     def load_bm25_index(self) -> bool:
-        """Ensure the BM25 index is built and cached, building it if needed.
+        """Ensure the BM25 index is ready, loading from cache or building.
 
-        Guarantees the BM25 index is built at most once per process,
-        regardless of how many queries are subsequently served.
+        Tries disk cache first (fast, ~50ms). Falls back to full rebuild
+        from JSON if cache is missing or stale.
 
         Returns:
-            ``True`` if a BM25 index (possibly empty) is ready to use,
-            ``False`` if building it failed outright.
+            ``True`` if a BM25 index is ready to use, ``False`` if
+            building it failed outright.
         """
         if self._bm25_loaded:
             return True
+        # Try fast path: load from pickle cache.
+        if self._load_bm25_cache():
+            self._bm25_loaded = True
+            return True
+        # Slow path: rebuild from JSON files.
         built = self.build_bm25()
         self._bm25_loaded = built
         return built

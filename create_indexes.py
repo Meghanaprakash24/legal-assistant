@@ -51,7 +51,6 @@ def main() -> None:
         api_key=config.QDRANT_API_KEY or None,
         timeout=config.QDRANT_TIMEOUT,
         prefer_grpc=False,
-        trust_env=config.QDRANT_TRUST_ENV,
     )
 
     if not client.collection_exists(config.COLLECTION_NAME):

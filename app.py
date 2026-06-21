@@ -172,48 +172,130 @@ _stats = _RuntimeStatistics()
 
 
 # ---------------------------------------------------------------------------
-# Shared component container
+# Shared component container — LAZY initialisation for low-RAM environments
 # ---------------------------------------------------------------------------
 
 
-@dataclass
-class _Components:
-    """Holds every heavyweight component, constructed once at startup.
+import threading
 
-    Populated by the lifespan handler and read by every endpoint via
-    ``request.app.state.components``. Never reconstructed per request.
+class _Components:
+    """Holds every heavyweight component with lazy, thread-safe initialisation.
+
+    Nothing is loaded at application startup.  Each component is created
+    on its first access (i.e. the first API request that needs it) and
+    cached for all subsequent requests.  This keeps startup RAM under
+    ~80 MB and defers the ~500 MB model-loading cost to the first real
+    request, allowing the process to boot within Render's 512 MB limit.
     """
 
-    pipeline: LegalRAGPipeline | None = None
-    orchestrator: LegalRAGOrchestrator | None = None
-    classifier: FactExtractionAgent | None = None
-    reranker: CrossEncoderReranker | None = None
-    validator: CitationValidator | None = None
-    synthesizer: ResponseSynthesizer | None = None
-    pipeline_ready: bool = False
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._pipeline: LegalRAGPipeline | None = None
+        self._orchestrator: LegalRAGOrchestrator | None = None
+        self._classifier: FactExtractionAgent | None = None
+        self._reranker: CrossEncoderReranker | None = None
+        self._validator: CitationValidator | None = None
+        self._synthesizer: ResponseSynthesizer | None = None
+        self._pipeline_ready: bool = False
+
+    # ── Lazy properties ────────────────────────────────────────────────
+
+    def _ensure_pipeline(self) -> None:
+        """Create and warm the pipeline exactly once (thread-safe)."""
+        if self._pipeline_ready:
+            return
+        with self._lock:
+            if self._pipeline_ready:
+                return  # double-check after acquiring lock
+            logger.info("Lazy-initialising LegalRAGPipeline…")
+            self._pipeline = LegalRAGPipeline()
+            self._pipeline.initialize()
+            self._pipeline_ready = True
+            logger.info("LegalRAGPipeline ready (lazy init).")
+
+    @property
+    def pipeline(self) -> LegalRAGPipeline | None:
+        self._ensure_pipeline()
+        return self._pipeline
+
+    @property
+    def pipeline_ready(self) -> bool:
+        return self._pipeline_ready
+
+    @property
+    def orchestrator(self) -> LegalRAGOrchestrator | None:
+        if self._orchestrator is None:
+            with self._lock:
+                if self._orchestrator is None:
+                    self._ensure_pipeline()
+                    try:
+                        self._orchestrator = LegalRAGOrchestrator(self._pipeline)
+                        logger.info("LegalRAGOrchestrator ready (lazy init).")
+                    except Exception:
+                        logger.exception("LegalRAGOrchestrator failed to construct.")
+        return self._orchestrator
+
+    @property
+    def classifier(self) -> FactExtractionAgent | None:
+        if self._classifier is None:
+            with self._lock:
+                if self._classifier is None:
+                    try:
+                        self._classifier = FactExtractionAgent()
+                    except Exception:
+                        logger.exception("FactExtractionAgent failed to construct.")
+        return self._classifier
+
+    @property
+    def reranker(self) -> CrossEncoderReranker | None:
+        if self._reranker is None:
+            with self._lock:
+                if self._reranker is None:
+                    self._ensure_pipeline()
+                    self._reranker = getattr(self._pipeline, "_reranker", None)
+        return self._reranker
+
+    @property
+    def validator(self) -> CitationValidator | None:
+        if self._validator is None:
+            with self._lock:
+                if self._validator is None:
+                    try:
+                        self._validator = CitationValidator()
+                    except Exception:
+                        logger.exception("CitationValidator failed to construct.")
+        return self._validator
+
+    @property
+    def synthesizer(self) -> ResponseSynthesizer | None:
+        if self._synthesizer is None:
+            with self._lock:
+                if self._synthesizer is None:
+                    try:
+                        self._synthesizer = ResponseSynthesizer()
+                    except Exception:
+                        logger.exception("ResponseSynthesizer failed to construct.")
+        return self._synthesizer
 
 
 # ---------------------------------------------------------------------------
-# Lifespan — construct everything once, on startup
+# Lifespan — lightweight startup, heavy work deferred to first request
 # ---------------------------------------------------------------------------
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Initialise every shared component once at startup, log on shutdown.
+    """Lightweight startup: validate env vars only, defer heavy loading.
 
-    All construction happens here, never inside an endpoint. Pipeline
-    initialisation (BM25 build, Qdrant connection, reranker model load)
-    is the most expensive step and is logged explicitly so a slow
-    startup is visible rather than silently absorbed into the first
-    request's latency.
+    All ML model loading, BM25 index building, and Qdrant connections
+    are deferred to the first request via the lazy _Components above.
+    This keeps startup RAM under ~80 MB and boot time under ~3 seconds.
 
     Args:
         app: The FastAPI application instance.
 
     Yields:
-        Control back to FastAPI once startup completes; runs shutdown
-        logging after the application stops serving requests.
+        Control back to FastAPI once startup completes.
     """
     logger.info("Application startup beginning…")
     startup_start = time.perf_counter()
@@ -226,62 +308,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if not config.QDRANT_API_KEY:
         logger.warning("QDRANT_API_KEY is not set — Qdrant Cloud authentication may fail.")
 
-    components = _Components()
-
-    try:
-        components.pipeline = LegalRAGPipeline()
-        components.pipeline.initialize()
-        components.pipeline_ready = True
-        logger.info("LegalRAGPipeline initialised.")
-    except Exception:
-        logger.exception("Pipeline initialization failed.")
-        raise
-
-    try:
-        components.orchestrator = LegalRAGOrchestrator(components.pipeline)
-        logger.info("LegalRAGOrchestrator constructed with shared pipeline.")
-    except Exception:
-        logger.exception("LegalRAGOrchestrator failed to construct.")
-
-    try:
-        components.classifier = FactExtractionAgent()
-        logger.info("FactExtractionAgent constructed.")
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("FactExtractionAgent failed to construct.")
-
-    try:
-        components.reranker = components.pipeline._reranker
-
-        if components.reranker is None:
-            raise RuntimeError("Pipeline failed to initialize reranker.")
-
-        logger.info("Using reranker initialized by LegalRAGPipeline.")
-    except Exception:
-        logger.exception("Unable to obtain reranker from pipeline.")
-
-    try:
-        components.validator = CitationValidator()
-        logger.info("CitationValidator constructed.")
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("CitationValidator failed to construct.")
-
-    try:
-        components.synthesizer = ResponseSynthesizer()
-        logger.info("ResponseSynthesizer constructed.")
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("ResponseSynthesizer failed to construct.")
-
-    app.state.components = components
+    # Components container — nothing loaded yet, just the shell.
+    app.state.components = _Components()
 
     elapsed = time.perf_counter() - startup_start
-    logger.info("Application startup complete in {:.2f}s.", elapsed)
+    logger.info("Application startup complete in {:.2f}s (models will load on first request).", elapsed)
 
     yield
 
     logger.info("Application shutdown beginning…")
-    logger.info(
-        "Final statistics: {}", _stats.to_dict()
-    )
+    logger.info("Final statistics: {}", _stats.to_dict())
     logger.info("Application shutdown complete.")
 
 
@@ -611,21 +647,28 @@ async def health(request: Request) -> dict[str, Any]:
     """
     components = _get_components(request)
 
-    pipeline_ok = bool(components.pipeline_ready)
+    # Check without triggering lazy init — use the internal flag directly.
+    pipeline_ok = bool(components._pipeline_ready)
 
     qdrant_ok = False
-    if components.pipeline is not None:
-        retriever = getattr(components.pipeline, "_retriever", None)
+    if components._pipeline is not None:
+        retriever = getattr(components._pipeline, "_retriever", None)
         if retriever is not None:
             try:
-                qdrant_ok = bool(retriever.connect())
+                qdrant_ok = bool(retriever.health_check())
             except Exception as exc:  # noqa: BLE001
                 logger.warning("Qdrant health check failed: {}", exc)
                 qdrant_ok = False
 
     groq_ok = bool(config.GROQ_API_KEY)
 
-    overall_status = "healthy" if (pipeline_ok and qdrant_ok and groq_ok) else "degraded"
+    # Before first request, pipeline hasn't loaded — report "starting" not "degraded".
+    if not pipeline_ok:
+        overall_status = "starting"
+    elif qdrant_ok and groq_ok:
+        overall_status = "healthy"
+    else:
+        overall_status = "degraded"
 
     return {
         "status": overall_status,

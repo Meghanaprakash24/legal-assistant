@@ -243,9 +243,7 @@ class QdrantIndexer:
                 port=None,
                 api_key=self._api_key or None,
                 timeout=self._timeout,
-                check_compatibility=False,
                 prefer_grpc=False,
-                trust_env=config.QDRANT_TRUST_ENV,
             )
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed to create Qdrant client: {}", exc)
