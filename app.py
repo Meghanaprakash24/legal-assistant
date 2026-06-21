@@ -36,7 +36,7 @@ import sys
 from pathlib import Path as _Path
 
 _ROOT_DIR = _Path(__file__).resolve().parent
-_SRC_DIR = _ROOT_DIR / "src"
+_SRC_DIR = _ROOT_DIR / "backend" / "src"
 
 for _path in (str(_ROOT_DIR), str(_SRC_DIR)):
     if _path not in sys.path:

@@ -50,8 +50,8 @@ def _ensure_project_root_on_path() -> None:
 
     Safe to call multiple times — paths are only inserted when absent.
     """
-    src_dir = _Path(__file__).resolve().parent     # …/LAW-RAG/src
-    root_dir = src_dir.parent                      # …/LAW-RAG
+    src_dir = _Path(__file__).resolve().parent     # …/backend/src
+    root_dir = src_dir.parent.parent               # …/LAW-RAG (project root, contains config.py)
 
     for path_str in (str(root_dir), str(src_dir)):
         if path_str not in sys.path:
