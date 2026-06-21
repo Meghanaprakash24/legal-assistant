@@ -17,7 +17,7 @@ A production-style AI-powered Legal Assistant built using **Retrieval-Augmented 
 * Evidence retrieval and validation
 * Conversation history
 * Analytics and pipeline visualization
-* RAGAS evaluation support
+
 
 ## System Architecture
 
@@ -94,9 +94,7 @@ Final Response with Citations
 
 * Qdrant Cloud
 
-### Evaluation
 
-* RAGAS
 
 ## Knowledge Base
 
@@ -255,15 +253,6 @@ cd frontend
 
 streamlit run app.py
 ```
-
-## Evaluation
-
-The project supports evaluation using **RAGAS**, enabling assessment of:
-
-* Faithfulness
-* Context Precision
-* Context Recall
-* Answer Relevancy
 
 ## Future Improvements
 
