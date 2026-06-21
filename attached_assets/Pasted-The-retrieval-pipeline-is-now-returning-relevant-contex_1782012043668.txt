@@ -1,0 +1,177 @@
+The retrieval pipeline is now returning relevant context, but there is still a critical issue with the Section Mapper Agent.
+
+## Current Problem
+
+The retrieved context is generally correct, but the Section Mapper sometimes outputs incorrect BNS/BNSS/BSA sections even though the correct legal text exists in the retrieved documents.
+
+It appears the LLM is guessing or reasoning about the section number instead of extracting it from the retrieved context.
+
+For a legal RAG system, this behavior is unacceptable. Every cited section must be grounded in the retrieved documents.
+
+## Required Fix
+
+### 1. Never Hallucinate Section Numbers
+
+The Section Mapper must never generate section numbers from model knowledge.
+
+It should only identify sections that explicitly appear in the retrieved documents.
+
+If a section number is not present in the retrieved context, the agent must return:
+
+* "No applicable section found in retrieved documents."
+
+instead of inventing one.
+
+---
+
+### 2. Search Across All Four Legal Documents
+
+The retrieval pipeline must search all indexed legal documents for every query:
+
+* Constitution of India
+* Bharatiya Nyaya Sanhita (BNS)
+* Bharatiya Nagarik Suraksha Sanhita (BNSS)
+* Bharatiya Sakshya Adhiniyam (BSA)
+
+Do not restrict retrieval to a single document.
+
+Retrieve relevant chunks from every applicable source.
+
+The retriever should merge and rerank results from all four documents before passing them to downstream agents.
+
+---
+
+### 3. Improve Hybrid Retrieval
+
+The retrieval process should:
+
+* Perform dense vector search.
+* Perform BM25 keyword search.
+* Retrieve results from all four legal documents.
+* Merge the candidate results.
+* Apply BGE Reranker.
+* Pass only the highest-ranked chunks to the agents.
+
+The reranker should determine which legal provisions are most relevant regardless of which document they come from.
+
+---
+
+### 4. Section Extraction Instead of Prediction
+
+The Section Mapper should work like an information extraction component.
+
+Its job is to extract:
+
+* BNS Sections
+* BNSS Sections
+* BSA Sections
+* Constitutional Articles
+
+from the retrieved chunks.
+
+It should not infer missing section numbers.
+
+If multiple sections are relevant, return all of them.
+
+---
+
+### 5. Include Source Metadata
+
+Every retrieved chunk should carry metadata such as:
+
+* Document Name
+* Chapter
+* Section Number
+* Article Number (if Constitution)
+* Chunk ID
+
+The Section Mapper should rely on this metadata instead of asking the LLM to guess section numbers.
+
+If the metadata already contains the section number, use that directly.
+
+---
+
+### 6. Validator Responsibilities
+
+The Validator Agent must verify that:
+
+* Every cited section exists in the retrieved chunk.
+* The document name matches the section.
+* The quoted text belongs to that section.
+* No fabricated citations are included.
+
+If validation fails, remove the incorrect citation instead of returning it.
+
+---
+
+### 7. Quote Selector
+
+The Quote Selector should extract the exact statutory language from the retrieved section.
+
+Every quote should include:
+
+* Document Name
+* Section/Article Number
+* Exact excerpt from the retrieved chunk
+
+Never paraphrase statutory text when quoting.
+
+---
+
+### 8. Final Response Format
+
+The final response should clearly separate information by source.
+
+Example:
+
+### Applicable Legal Provisions
+
+**BNS**
+
+* Section XXX
+* Summary
+* Exact quotation
+
+**BNSS**
+
+* Section XXX
+* Summary
+* Exact quotation
+
+**BSA**
+
+* Section XXX
+* Summary
+* Exact quotation
+
+**Constitution of India**
+
+* Article XX
+* Summary
+* Exact quotation
+
+This ensures the system retrieves and cites from all four legal documents whenever applicable.
+
+---
+
+### 9. Improve Retrieval Accuracy
+
+Increase retrieval quality by:
+
+* Retrieving Top-30 chunks initially.
+* Applying BGE reranking.
+* Keeping the Top-8 to Top-10 chunks.
+* Deduplicating overlapping chunks.
+* Preserving metadata throughout the pipeline.
+
+---
+
+### 10. Strict Grounding Policy
+
+The legal assistant must operate in a retrieval-first manner.
+
+Every legal statement, section number, article number, quotation, and citation must come directly from the retrieved documents.
+
+If the information cannot be found in the retrieved context, the assistant must explicitly state that no supporting legal provision was retrieved rather than generating one from model memory.
+
+Please refactor the orchestration so that section mapping is based on document extraction and metadata, not LLM reasoning. The final system should behave like a production-grade legal search engine where citations are always verifiable and grounded in the indexed legal corpus.

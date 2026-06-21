@@ -1,0 +1,14 @@
+{
+  "document": "Constitution",
+  "total_records": 431,
+  "parent_chunks": 0,
+  "clause_chunks": 0,
+  "explanation_chunks": 0,
+  "illustration_chunks": 0,
+  "article_chunks": 431,
+  "total_chunks": 431,
+  "average_chunk_length": 0.0,
+  "average_clause_length": 0.0,
+  "duplicate_count": 0,
+  "processing_time_seconds": 0.1053
+}

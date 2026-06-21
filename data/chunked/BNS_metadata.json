@@ -1,0 +1,14 @@
+{
+  "document": "BNS",
+  "total_records": 357,
+  "parent_chunks": 357,
+  "clause_chunks": 0,
+  "explanation_chunks": 88,
+  "illustration_chunks": 87,
+  "article_chunks": 0,
+  "total_chunks": 532,
+  "average_chunk_length": 650.8,
+  "average_clause_length": 0.0,
+  "duplicate_count": 0,
+  "processing_time_seconds": 0.3007
+}

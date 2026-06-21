@@ -1,0 +1,14 @@
+{
+  "document": "BNSS",
+  "total_records": 531,
+  "parent_chunks": 531,
+  "clause_chunks": 1265,
+  "explanation_chunks": 0,
+  "illustration_chunks": 0,
+  "article_chunks": 0,
+  "total_chunks": 1796,
+  "average_chunk_length": 1366.4,
+  "average_clause_length": 515.1,
+  "duplicate_count": 0,
+  "processing_time_seconds": 0.5355
+}

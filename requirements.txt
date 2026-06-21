@@ -1,0 +1,35 @@
+PyMuPDF
+loguru
+python-dotenv
+pydantic
+pdfplumber==0.11.9
+pypdf==5.9.0
+tqdm
+numpy==1.26.4
+qdrant-client>=1.9.0,<2.0.0
+rank-bm25>=0.2.2,<0.3.0
+torch
+transformers==4.52.4
+sentence-transformers==4.1.0
+huggingface-hub==0.33.0
+groq
+fastapi
+starlette
+uvicorn
+anyio
+langgraph
+
+# Frontend runtime dependencies. Replit deployments install the root
+# requirements.txt, so keep Streamlit packages here too.
+streamlit>=1.38
+requests>=2.31
+pandas>=2.2
+plotly>=5.22
+streamlit-extras>=0.4.3
+streamlit-option-menu>=0.3.13
+streamlit-lottie>=0.0.5
+streamlit-card>=1.0.2
+streamlit-aggrid>=1.0.5
+streamlit-autorefresh>=1.0.1
+fpdf2>=2.7
+psutil>=5.9

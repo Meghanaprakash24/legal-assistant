@@ -1,0 +1,14 @@
+{
+  "document": "BSA",
+  "total_records": 169,
+  "parent_chunks": 169,
+  "clause_chunks": 267,
+  "explanation_chunks": 0,
+  "illustration_chunks": 0,
+  "article_chunks": 0,
+  "total_chunks": 436,
+  "average_chunk_length": 959.3,
+  "average_clause_length": 392.6,
+  "duplicate_count": 0,
+  "processing_time_seconds": 0.172
+}

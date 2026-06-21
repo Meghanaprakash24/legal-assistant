@@ -1,0 +1,885 @@
+/*
+ * styles/theme.css
+ * ----------------
+ * Professional dark-navy / white theme for the Indian Legal RAG System.
+ *
+ * Applied in every page via:
+ *
+ *     with open(config.CSS_PATH) as f:
+ *         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+ *
+ * Conventions
+ * -----------
+ * - All colours reference the palette defined in config.py.
+ * - No gradients, no neon colours, no drop-shadows heavier than 1 level.
+ * - Every rule targets a Streamlit-generated class or a custom .lex-*
+ *   class injected via st.markdown(unsafe_allow_html=True).
+ * - Specificity is kept low; !important is used only where Streamlit's
+ *   own inline styles would otherwise override.
+ */
+
+/* ===========================================================================
+   CSS Custom Properties
+   =========================================================================== */
+
+:root {
+  --color-primary:    #0F172A;
+  --color-secondary:  #1E293B;
+  --color-accent:     #2563EB;
+  --color-bg:         #F8FAFC;
+  --color-card:       #FFFFFF;
+  --color-border:     #E5E7EB;
+  --color-text:       #111827;
+  --color-text-soft:  #6B7280;
+  --color-text-inv:   #F9FAFB;
+  --color-success:    #16A34A;
+  --color-warning:    #D97706;
+  --color-error:      #DC2626;
+  --color-info:       #0284C7;
+
+  --radius-card:  10px;
+  --radius-btn:   6px;
+  --radius-input: 6px;
+  --radius-badge: 4px;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+
+  --transition: 150ms ease;
+}
+
+/* ===========================================================================
+   Page & App Shell
+   =========================================================================== */
+
+/* Main page background */
+.stApp {
+  background-color: var(--color-bg) !important;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+}
+
+/* Remove default Streamlit top padding */
+.block-container {
+  padding-top: 1.5rem !important;
+  padding-bottom: 2rem !important;
+  max-width: 1200px !important;
+}
+
+/* Hide the default Streamlit menu and footer */
+#MainMenu { visibility: hidden; }
+footer    { visibility: hidden; }
+
+/* ===========================================================================
+   Sidebar
+   =========================================================================== */
+
+[data-testid="stSidebar"] {
+  background-color: var(--color-primary) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-testid="stSidebar"] * {
+  color: var(--color-text-inv) !important;
+}
+
+/* Sidebar navigation items */
+[data-testid="stSidebar"] .stRadio label,
+[data-testid="stSidebar"] .stSelectbox label {
+  color: #CBD5E1 !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Sidebar section divider */
+[data-testid="stSidebar"] hr {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 1rem 0;
+}
+
+/* Sidebar logo area */
+.lex-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 0 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.lex-sidebar-logo span.icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.lex-sidebar-logo span.name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-inv);
+  letter-spacing: -0.01em;
+}
+
+/* Sidebar nav link */
+.lex-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94A3B8;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  text-decoration: none;
+}
+
+.lex-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: var(--color-text-inv);
+}
+
+.lex-nav-item.active {
+  background-color: var(--color-accent);
+  color: var(--color-text-inv);
+}
+
+/* ===========================================================================
+   Typography
+   =========================================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lex-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.025em;
+}
+
+.lex-page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-text-soft);
+  margin-bottom: 1.5rem;
+}
+
+.lex-section-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+/* ===========================================================================
+   Cards
+   =========================================================================== */
+
+.lex-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+.lex-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lex-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Metric / stats card */
+.lex-metric-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition);
+}
+
+.lex-metric-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.lex-metric-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.375rem;
+}
+
+.lex-metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.lex-metric-delta {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-success);
+  margin-top: 0.375rem;
+}
+
+/* Citation card */
+.lex-citation-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+
+.lex-citation-card .doc-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.25rem;
+}
+
+.lex-citation-card .section-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 0.375rem;
+}
+
+.lex-citation-card .citation-text {
+  font-size: 0.875rem;
+  color: var(--color-text-soft);
+  line-height: 1.6;
+}
+
+/* ===========================================================================
+   Badges & Status Pills
+   =========================================================================== */
+
+.lex-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-badge);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lex-badge-success {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.lex-badge-warning {
+  background-color: #FEF9C3;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.lex-badge-error {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+.lex-badge-info {
+  background-color: #E0F2FE;
+  color: #075985;
+  border: 1px solid #BAE6FD;
+}
+
+.lex-badge-neutral {
+  background-color: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+/* ===========================================================================
+   Buttons
+   =========================================================================== */
+
+.lex-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1.125rem;
+  border-radius: var(--radius-btn);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), opacity var(--transition);
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lex-btn-primary {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.lex-btn-primary:hover {
+  background-color: #1D4ED8;
+}
+
+.lex-btn-secondary {
+  background-color: var(--color-card);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+}
+
+.lex-btn-secondary:hover {
+  background-color: #F1F5F9;
+}
+
+.lex-btn-ghost {
+  background-color: transparent;
+  color: var(--color-accent);
+}
+
+.lex-btn-ghost:hover {
+  background-color: #EFF6FF;
+}
+
+/* Override Streamlit default button */
+.stButton > button {
+  background-color: var(--color-accent) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: var(--radius-btn) !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 1.25rem !important;
+  transition: background var(--transition) !important;
+  box-shadow: none !important;
+}
+
+.stButton > button:hover {
+  background-color: #1D4ED8 !important;
+}
+
+.stButton > button[kind="secondary"] {
+  background-color: var(--color-card) !important;
+  color: var(--color-primary) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+  background-color: #F1F5F9 !important;
+}
+
+/* ===========================================================================
+   Chat Bubbles
+   =========================================================================== */
+
+.lex-chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+/* User message */
+.lex-chat-user {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  align-items: flex-end;
+}
+
+.lex-chat-user .bubble {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  padding: 0.75rem 1rem;
+  border-radius: 16px 16px 4px 16px;
+  max-width: 72%;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+/* AI message */
+.lex-chat-ai {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.625rem;
+  align-items: flex-end;
+}
+
+.lex-chat-ai .bubble {
+  background-color: var(--color-card);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 0.875rem 1.125rem;
+  border-radius: 16px 16px 16px 4px;
+  max-width: 80%;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  box-shadow: var(--shadow-card);
+}
+
+/* Avatar */
+.lex-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.lex-avatar-user {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.lex-avatar-ai {
+  background-color: var(--color-primary);
+  color: var(--color-text-inv);
+}
+
+/* Timestamp */
+.lex-chat-timestamp {
+  font-size: 0.6875rem;
+  color: var(--color-text-soft);
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+/* Typing indicator */
+.lex-typing {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 16px 16px 16px 4px;
+  width: fit-content;
+}
+
+.lex-typing .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-text-soft);
+  animation: lex-bounce 1.2s infinite;
+}
+
+.lex-typing .dot:nth-child(2) { animation-delay: 0.2s; }
+.lex-typing .dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes lex-bounce {
+  0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+  40%           { transform: translateY(-5px); opacity: 1.0; }
+}
+
+/* ===========================================================================
+   Input & Search
+   =========================================================================== */
+
+/* Text input override */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea {
+  background-color: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-input) !important;
+  color: var(--color-text) !important;
+  font-size: 0.9375rem !important;
+  padding: 0.625rem 0.875rem !important;
+  box-shadow: none !important;
+  transition: border-color var(--transition) !important;
+}
+
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+  border-color: var(--color-accent) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Search box */
+.lex-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.lex-search-box input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  background: var(--color-card);
+  transition: border-color var(--transition);
+  outline: none;
+}
+
+.lex-search-box input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.lex-search-box .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--color-text-soft);
+  pointer-events: none;
+}
+
+/* ===========================================================================
+   Tables
+   =========================================================================== */
+
+.stDataFrame,
+[data-testid="stTable"] {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-card) !important;
+  overflow: hidden !important;
+}
+
+.stDataFrame thead tr th,
+[data-testid="stTable"] thead tr th {
+  background-color: #F1F5F9 !important;
+  color: var(--color-text) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.stDataFrame tbody tr:nth-child(even),
+[data-testid="stTable"] tbody tr:nth-child(even) {
+  background-color: #F8FAFC !important;
+}
+
+.stDataFrame tbody tr:hover,
+[data-testid="stTable"] tbody tr:hover {
+  background-color: #EFF6FF !important;
+}
+
+.stDataFrame tbody tr td,
+[data-testid="stTable"] tbody tr td {
+  font-size: 0.875rem !important;
+  color: var(--color-text) !important;
+  padding: 0.625rem 1rem !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+/* ===========================================================================
+   Tabs
+   =========================================================================== */
+
+.stTabs [data-baseweb="tab-list"] {
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--color-border) !important;
+  background: transparent !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+  background: transparent !important;
+  border-radius: var(--radius-btn) var(--radius-btn) 0 0 !important;
+  border: none !important;
+  color: var(--color-text-soft) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 1rem !important;
+  transition: color var(--transition), background var(--transition) !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+  color: var(--color-primary) !important;
+  background: #F1F5F9 !important;
+}
+
+.stTabs [aria-selected="true"] {
+  color: var(--color-accent) !important;
+  border-bottom: 2px solid var(--color-accent) !important;
+  font-weight: 600 !important;
+}
+
+/* ===========================================================================
+   Expander
+   =========================================================================== */
+
+.streamlit-expanderHeader {
+  background-color: #F8FAFC !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-card) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: var(--color-primary) !important;
+  padding: 0.75rem 1rem !important;
+  transition: background var(--transition) !important;
+}
+
+.streamlit-expanderHeader:hover {
+  background-color: #F1F5F9 !important;
+}
+
+.streamlit-expanderContent {
+  border: 1px solid var(--color-border) !important;
+  border-top: none !important;
+  border-radius: 0 0 var(--radius-card) var(--radius-card) !important;
+  padding: 1rem !important;
+  background: var(--color-card) !important;
+}
+
+/* ===========================================================================
+   Selectbox & Multiselect
+   =========================================================================== */
+
+.stSelectbox > div > div,
+.stMultiSelect > div > div {
+  background-color: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-input) !important;
+  color: var(--color-text) !important;
+}
+
+/* ===========================================================================
+   Scrollbar
+   =========================================================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* ===========================================================================
+   Pipeline Stage Nodes
+   =========================================================================== */
+
+.lex-pipeline-node {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.lex-pipeline-node.active {
+  border-color: var(--color-accent);
+  background: #EFF6FF;
+  color: var(--color-accent);
+}
+
+.lex-pipeline-node.complete {
+  border-color: var(--color-success);
+  background: #F0FDF4;
+  color: var(--color-success);
+}
+
+.lex-pipeline-node.error {
+  border-color: var(--color-error);
+  background: #FEF2F2;
+  color: var(--color-error);
+}
+
+.lex-pipeline-connector {
+  width: 2px;
+  height: 20px;
+  background-color: var(--color-border);
+  margin-left: 1.875rem;
+}
+
+/* ===========================================================================
+   Evidence / Retrieved Chunks Panel
+   =========================================================================== */
+
+.lex-evidence-panel {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.lex-evidence-header {
+  background: var(--color-secondary);
+  color: var(--color-text-inv);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lex-evidence-item {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition);
+}
+
+.lex-evidence-item:last-child {
+  border-bottom: none;
+}
+
+.lex-evidence-item:hover {
+  background: #F8FAFC;
+}
+
+.lex-evidence-doc {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.2rem;
+}
+
+.lex-evidence-section {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 0.375rem;
+}
+
+.lex-evidence-text {
+  font-size: 0.8125rem;
+  color: var(--color-text-soft);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Metric / Dashboard KPI row
+   =========================================================================== */
+
+.lex-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===========================================================================
+   Status dot indicator
+   =========================================================================== */
+
+.lex-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.375rem;
+}
+
+.lex-status-dot.online   { background-color: var(--color-success); }
+.lex-status-dot.degraded { background-color: var(--color-warning); }
+.lex-status-dot.offline  { background-color: var(--color-error); }
+.lex-status-dot.unknown  { background-color: var(--color-text-soft); }
+
+/* ===========================================================================
+   Divider
+   =========================================================================== */
+
+.lex-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.25rem 0;
+}
+
+/* ===========================================================================
+   Code blocks (inside Markdown responses)
+   =========================================================================== */
+
+.lex-chat-ai pre,
+.lex-chat-ai code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background: #F1F5F9;
+  border-radius: 4px;
+}
+
+.lex-chat-ai pre {
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+}
+
+.lex-chat-ai code {
+  padding: 0.125rem 0.3rem;
+}
+
+/* ===========================================================================
+   Responsive tweaks
+   =========================================================================== */
+
+@media (max-width: 768px) {
+  .lex-chat-user .bubble,
+  .lex-chat-ai .bubble {
+    max-width: 92%;
+  }
+
+  .lex-metric-value {
+    font-size: 1.5rem;
+  }
+
+  .block-container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}

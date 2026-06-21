@@ -1,0 +1,284 @@
+The frontend and backend are now connected successfully, but the core issue is with the multi-agent RAG pipeline. The agents are not performing their intended responsibilities. Instead of reasoning over the retrieved legal documents, they are returning hardcoded or generic custom responses. I need the multi-agent orchestration to function as a true production-style RAG system.
+
+## Overall Goal
+
+Refactor the entire agent workflow so that every agent performs a specific task using the retrieved legal context instead of generating placeholder outputs. The system should follow a proper Retrieval-Augmented Generation pipeline with orchestration between agents.
+
+## Expected Architecture
+
+User Query
+
+↓
+
+Classifier Agent
+
+↓
+
+Retriever (Hybrid Search: BM25 + Dense Embeddings)
+
+↓
+
+Reranker (BGE Reranker)
+
+↓
+
+Top-K Relevant Chunks
+
+↓
+
+Specialized Agents
+
+↓
+
+Synthesizer Agent
+
+↓
+
+Final Response
+
+## Required Changes
+
+### 1. Classifier Agent
+
+The classifier should not return predefined categories.
+
+It must analyze the user's legal query and determine:
+
+* Type of offence
+* Nature of dispute (criminal/civil)
+* Relevant legal domain
+* Intent of the user (legal advice, section lookup, punishment, procedure, drafting, etc.)
+
+The classifier output should be structured and passed to downstream agents.
+
+---
+
+### 2. Retrieval Pipeline
+
+The retriever must actually retrieve relevant chunks from the indexed legal documents stored in Qdrant.
+
+The retrieval must include:
+
+* Dense vector search
+* BM25 keyword search
+* Hybrid score fusion
+* Metadata filtering when appropriate
+
+Do not bypass retrieval.
+
+Do not use hardcoded responses.
+
+---
+
+### 3. Reranking
+
+After retrieval,
+
+retrieve Top-20 chunks,
+
+rerank them using the local BGE Reranker,
+
+then send only the Top-5 or Top-8 highest scoring chunks to the downstream agents.
+
+The reranker must influence the final retrieved context.
+
+---
+
+### 4. Section Mapper Agent
+
+This agent should examine the retrieved context and identify:
+
+* Relevant BNS sections
+* BNSS provisions
+* BSA provisions
+* Constitutional Articles (if applicable)
+
+The agent should map sections based only on retrieved documents.
+
+Never hallucinate sections.
+
+Every mapped section should reference the source document and section number.
+
+---
+
+### 5. Quote Selector Agent
+
+The quote selector should extract the exact relevant legal text from the retrieved documents.
+
+It should quote only the portions necessary for answering the query.
+
+It must work across all four legal documents:
+
+* Constitution
+* Bharatiya Nyaya Sanhita (BNS)
+* Bharatiya Nagarik Suraksha Sanhita (BNSS)
+* Bharatiya Sakshya Adhiniyam (BSA)
+
+Do not fabricate quotations.
+
+Return exact excerpts from retrieved chunks.
+
+---
+
+### 6. Validator Agent
+
+The validator must verify that:
+
+* Every legal claim exists in retrieved context.
+* Every cited section actually appears in retrieved documents.
+* No unsupported statements are included.
+* Every answer is grounded in retrieved evidence.
+
+The validator should also attach proper citations including:
+
+* Document name
+* Section number
+* Article number (if Constitution)
+* Retrieved chunk reference (if available)
+
+Reject unsupported information instead of hallucinating.
+
+---
+
+### 7. Remedy Advisor Agent
+
+The remedy advisor should generate practical legal guidance using only retrieved legal context.
+
+Examples include:
+
+* Available legal remedies
+* Complaint procedure
+* FIR guidance
+* Court jurisdiction
+* Legal process
+* Next legal steps
+
+Do not provide generic advice.
+
+Advice should be grounded in retrieved documents and clearly indicate if additional legal consultation is recommended.
+
+---
+
+### 8. Synthesizer Agent
+
+The synthesizer should combine outputs from all previous agents into one coherent response.
+
+The response should include:
+
+1. Query Understanding
+
+2. Offence Classification
+
+3. Applicable Sections
+
+4. Relevant Legal Quotations
+
+5. Explanation
+
+6. Legal Remedies
+
+7. Supporting Citations
+
+8. Disclaimer
+
+The synthesizer should not independently generate legal facts.
+
+It should only combine validated outputs from other agents.
+
+---
+
+### 9. Agent Orchestration
+
+Implement proper orchestration.
+
+Each agent should receive outputs from previous agents instead of independently answering the user's query.
+
+Expected flow:
+
+Classifier
+
+↓
+
+Retriever
+
+↓
+
+Reranker
+
+↓
+
+Section Mapper
+
+↓
+
+Quote Selector
+
+↓
+
+Validator
+
+↓
+
+Remedy Advisor
+
+↓
+
+Synthesizer
+
+Do not allow agents to skip retrieval.
+
+---
+
+### 10. Grounding
+
+Every agent except the classifier must operate only on retrieved context.
+
+No agent should answer from model memory.
+
+No hardcoded examples.
+
+No fallback generic legal explanations unless retrieval completely fails.
+
+---
+
+### 11. Retrieval Quality
+
+Improve retrieval by:
+
+* Hybrid Search (BM25 + Dense)
+* Metadata filtering
+* Top-K retrieval
+* BGE reranking
+* Deduplication
+* Context compression before passing to agents
+
+---
+
+### 12. Error Handling
+
+If retrieval finds no relevant documents,
+
+the system should explicitly state:
+
+"No sufficient legal context was retrieved to answer this question."
+
+Do not fabricate answers.
+
+---
+
+### 13. Performance
+
+Ensure:
+
+* Agents execute in the correct order.
+* Context is passed between agents instead of recomputed.
+* Repeated embedding generation is avoided.
+* Retrieved chunks are cached during a single request.
+
+---
+
+### 14. Code Refactoring
+
+Review the existing orchestration code and remove any placeholder logic, mock outputs, or hardcoded responses. Ensure every agent is connected to the retrieval pipeline and contributes meaningfully to the final answer.
+
+The end result should behave like a genuine production-grade Legal RAG system where all agent outputs are grounded in retrieved legal documents and properly orchestrated through retrieval, reranking, validation, and synthesis.

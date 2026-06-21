@@ -1,0 +1,366 @@
+The Legal Assistant page is now functioning well. **Do NOT modify the Legal Assistant page or its backend logic.** It is working correctly and should remain untouched. Focus only on fixing, removing, or improving the remaining pages so that the application behaves like a polished production-grade system.
+
+# Primary Objective
+
+Refactor the application so that every page either displays meaningful live data or is removed. Eliminate placeholder content, duplicated sections, fake metrics, and static information throughout the application.
+
+---
+
+# 1. DO NOT TOUCH THE LEGAL ASSISTANT
+
+This page is working correctly.
+
+Do NOT modify:
+
+* Agent orchestration
+* RAG pipeline
+* Backend API
+* Chat logic
+* Retrieval
+* Reranking
+* Validation
+* Prompting
+
+Only work on the remaining pages.
+
+---
+
+# 2. Remove the App Page
+
+The App page is unnecessary.
+
+Completely remove:
+
+* Navigation entry
+* Route
+* Sidebar link
+* Any references in the application
+
+---
+
+# 3. About Page Cleanup
+
+The About page contains duplicate and unnecessary information.
+
+Please:
+
+* Remove the duplicated "Visual Architecture Flow" section (keep only one if necessary).
+* Remove the Developer Information section.
+* Remove the Future Enhancements section.
+* Remove the Acknowledgements section.
+* Remove any placeholder or repetitive text.
+
+Instead, keep only concise and useful sections such as:
+
+* Project Overview
+* Architecture Summary
+* Technology Stack
+* Multi-Agent Workflow
+* Retrieval Pipeline
+* Legal Knowledge Base
+
+The About page should look professional and concise.
+
+---
+
+# 4. Home Page
+
+The Home page is currently broken and does not provide any value.
+
+Either:
+
+Option A (Preferred):
+Completely redesign the Home page.
+
+Include:
+
+* Project introduction
+* Quick overview of the Legal AI Assistant
+* Technology stack
+* Multi-agent workflow summary
+* Features
+* Supported legal documents
+* System overview
+* Quick navigation to the Legal Assistant
+
+OR
+
+Option B:
+
+If the Home page cannot be made useful, remove it entirely from the application.
+
+Do not leave a broken or incomplete page.
+
+---
+
+# 5. Analytics Dashboard
+
+Currently this page displays static or fake values.
+
+Replace placeholder metrics with actual runtime data collected from user interactions.
+
+Examples:
+
+* Total queries processed
+* Average response time
+* Average retrieval time
+* Number of retrieved chunks
+* Average reranker score
+* Average context size
+* Number of citations generated
+* Most frequently referenced documents
+* Most frequently retrieved legal sections
+* Distribution of retrieved sources (BNS, BNSS, BSA, Constitution)
+
+The dashboard should update dynamically after every query.
+
+If runtime data is unavailable, clearly indicate "No data available" instead of showing fabricated numbers.
+
+---
+
+# 6. Citation Viewer
+
+Currently the Citation Viewer is not connected to the Legal Assistant.
+
+Connect it to the latest chat session.
+
+Display:
+
+* Retrieved document name
+* Section or Article
+* Exact quotation
+* Source metadata
+* Chunk ID
+* Similarity score
+* Reranker score (if available)
+
+Only show citations generated from actual queries.
+
+Never display placeholder citations.
+
+---
+
+# 7. Retrieved Evidence Page
+
+This page should display the evidence used for the latest response.
+
+Show:
+
+* Retrieved chunks
+* Document names
+* Metadata
+* Similarity scores
+* Reranker scores
+* Final selected chunks
+
+Allow the user to inspect exactly what was retrieved.
+
+Do not generate fake evidence.
+
+---
+
+# 8. Pipeline Visualization
+
+Currently the visualization is static.
+
+Make it reflect the actual execution of the pipeline.
+
+Show each stage:
+
+User Query
+
+↓
+
+Classifier
+
+↓
+
+Hybrid Retrieval
+
+↓
+
+Qdrant
+
+↓
+
+BGE Reranker
+
+↓
+
+Section Mapper
+
+↓
+
+Quote Selector
+
+↓
+
+Validator
+
+↓
+
+Remedy Advisor
+
+↓
+
+Synthesizer
+
+Highlight completed stages during execution.
+
+Display:
+
+* Retrieval time
+* Number of retrieved chunks
+* Number of reranked chunks
+* Final context size
+
+---
+
+# 9. System Status
+
+The current page contains static information.
+
+Replace it with actual system status.
+
+Examples:
+
+Backend API
+
+✓ Online
+
+Qdrant
+
+✓ Connected
+
+Groq API
+
+✓ Connected
+
+Embedding Model
+
+✓ Loaded
+
+Reranker
+
+✓ Loaded
+
+Knowledge Base
+
+✓ Indexed
+
+Show real health checks instead of hardcoded values.
+
+---
+
+# 10. Settings Page
+
+Currently it is mostly static.
+
+Make it functional.
+
+Allow users to configure:
+
+* Top-K Retrieval
+* Number of reranked chunks
+* LLM temperature
+* Maximum response length
+* Hybrid search weights
+* Enable/Disable reranker
+* Show citations
+* Show retrieved evidence
+
+Persist settings during the session.
+
+---
+
+# 11. Chat History (Important)
+
+Implement proper chat history persistence.
+
+Requirements:
+
+* Every conversation should be saved.
+* Preserve:
+
+  * User query
+  * Assistant response
+  * Retrieved citations
+  * Timestamp
+* Allow switching between previous conversations.
+* Allow clearing chat history.
+* Restore the previous conversation when reopened during the same session.
+* Keep chat history independent of the Legal Assistant logic.
+
+Do not lose previous messages after refreshing unless explicitly cleared.
+
+---
+
+# 12. Remove Placeholder Content
+
+Search the project for:
+
+* Mock data
+* Dummy values
+* Placeholder metrics
+* Random statistics
+* Static charts
+* Fake progress bars
+* Sample citations
+
+Replace them with:
+
+* Real runtime data
+* Actual API responses
+* Actual retrieval information
+
+If no data exists, display:
+
+"No data available."
+
+Do not fabricate information.
+
+---
+
+# 13. Improve Overall UI Consistency
+
+Ensure:
+
+* Consistent spacing
+* Responsive layout
+* Professional styling
+* No duplicated cards
+* No empty containers
+* No broken widgets
+* Consistent typography
+* Smooth loading states
+* Proper error handling
+
+---
+
+# 14. Code Cleanup
+
+Remove:
+
+* Dead code
+* Unused pages
+* Duplicate components
+* Duplicate routes
+* Unused imports
+* Placeholder JSON
+* Debug outputs
+* Console logging
+
+---
+
+# Final Goal
+
+The application should feel like a polished production-grade Legal AI Assistant.
+
+Every page should either:
+
+* Display meaningful live information connected to the Legal Assistant, or
+* Be removed entirely if it does not provide value.
+
+Do not introduce any fake metrics, placeholder text, or fabricated analytics.
+
+The Legal Assistant must remain completely unchanged, as it is already functioning correctly. Focus exclusively on improving the supporting pages, integrating them with real backend data, and implementing persistent chat history for a cohesive user experience.

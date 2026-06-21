@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
+  <!-- Balance scales icon -->
+  <g transform="translate(8, 6)">
+    <!-- Central pillar -->
+    <rect x="17" y="4" width="2" height="30" fill="#2563EB" rx="1"/>
+
+    <!-- Top beam -->
+    <rect x="4" y="4" width="28" height="2.5" fill="#2563EB" rx="1.25"/>
+
+    <!-- Left pan string -->
+    <line x1="6"  y1="6.5" x2="6"  y2="18" stroke="#2563EB" stroke-width="1.5"/>
+    <!-- Right pan string -->
+    <line x1="30" y1="6.5" x2="30" y2="18" stroke="#2563EB" stroke-width="1.5"/>
+
+    <!-- Left pan -->
+    <ellipse cx="6"  cy="19.5" rx="6"  ry="2" fill="#0F172A" stroke="#2563EB" stroke-width="1"/>
+    <!-- Right pan -->
+    <ellipse cx="30" cy="19.5" rx="6"  ry="2" fill="#0F172A" stroke="#2563EB" stroke-width="1"/>
+
+    <!-- Base -->
+    <rect x="10" y="34" width="16" height="2.5" fill="#2563EB" rx="1.25"/>
+  </g>
+
+  <!-- App name text -->
+  <text x="56" y="22" font-family="Inter, Segoe UI, sans-serif"
+        font-size="16" font-weight="700" fill="#0F172A" letter-spacing="-0.5">
+    LexAI
+  </text>
+  <text x="56" y="37" font-family="Inter, Segoe UI, sans-serif"
+        font-size="9.5" font-weight="500" fill="#6B7280" letter-spacing="0.8">
+    INDIAN LEGAL RESEARCH
+  </text>
+</svg>
