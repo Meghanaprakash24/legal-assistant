@@ -95,7 +95,6 @@ Final Response with Citations
 * Qdrant Cloud
 
 
-
 ## Knowledge Base
 
 The assistant retrieves information from:
