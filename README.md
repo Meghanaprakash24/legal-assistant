@@ -3,7 +3,6 @@
 A production-style AI-powered Legal Assistant built using **Retrieval-Augmented Generation (RAG)** and a **multi-agent architecture** to provide context-aware answers from Indian legal documents. The application combines hybrid retrieval, reranking, and specialized AI agents to generate reliable, citation-backed legal responses.
 
 ## Features
-
 * Multi-agent orchestration for legal reasoning
 * Hybrid Retrieval (BM25 + Dense Embeddings)
 * BGE Embeddings for semantic search
